@@ -1,0 +1,251 @@
+/*
+ * Bones Scripts File
+ * Author: Eddie Machado
+ *
+ * This file should contain any js scripts you want to add to the site.
+ * Instead of calling it in the header or throwing it inside wp_head()
+ * this file will be called automatically in the footer so as not to
+ * slow the page load.
+ *
+ * There are a lot of example functions and tools in here. If you don't
+ * need any of it, just remove it. They are meant to be helpers and are
+ * not required. It's your world baby, you can do whatever you want.
+*/
+
+
+/*
+ * Get Viewport Dimensions
+ * returns object with viewport dimensions to match css in width and height properties
+ * ( source: http://andylangton.co.uk/blog/development/get-viewport-size-width-and-height-javascript )
+*/
+function updateViewportDimensions() {
+	var w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;
+	return { width:x,height:y };
+}
+// setting the viewport width
+var viewport = updateViewportDimensions();
+
+
+/*
+ * Throttle Resize-triggered Events
+ * Wrap your actions in this function to throttle the frequency of firing them off, for better performance, esp. on mobile.
+ * ( source: http://stackoverflow.com/questions/2854407/javascript-jquery-window-resize-how-to-fire-after-the-resize-is-completed )
+*/
+var waitForFinalEvent = (function () {
+	var timers = {};
+	return function (callback, ms, uniqueId) {
+		if (!uniqueId) { uniqueId = "Don't call this twice without a uniqueId"; }
+		if (timers[uniqueId]) { clearTimeout (timers[uniqueId]); }
+		timers[uniqueId] = setTimeout(callback, ms);
+	};
+})();
+
+// how long to wait before deciding the resize has stopped, in ms. Around 50-100 should work ok.
+var timeToWaitForLast = 100;
+
+
+/*
+ * Here's an example so you can see how we're using the above function
+ *
+ * This is commented out so it won't work, but you can copy it and
+ * remove the comments.
+ *
+ *
+ *
+ * If we want to only do it on a certain page, we can setup checks so we do it
+ * as efficient as possible.
+ *
+ * if( typeof is_home === "undefined" ) var is_home = $('body').hasClass('home');
+ *
+ * This once checks to see if you're on the home page based on the body class
+ * We can then use that check to perform actions on the home page only
+ *
+ * When the window is resized, we perform this function
+ * $(window).resize(function () {
+ *
+ *    // if we're on the home page, we wait the set amount (in function above) then fire the function
+ *    if( is_home ) { waitForFinalEvent( function() {
+ *
+ *	// update the viewport, in case the window size has changed
+ *	viewport = updateViewportDimensions();
+ *
+ *      // if we're above or equal to 768 fire this off
+ *      if( viewport.width >= 768 ) {
+ *        console.log('On home page and window sized to 768 width or more.');
+ *      } else {
+ *        // otherwise, let's do this instead
+ *        console.log('Not on home page, or window sized to less than 768.');
+ *      }
+ *
+ *    }, timeToWaitForLast, "your-function-identifier-string"); }
+ * });
+ *
+ * Pretty cool huh? You can create functions like this to conditionally load
+ * content and other stuff dependent on the viewport.
+ * Remember that mobile devices and javascript aren't the best of friends.
+ * Keep it light and always make sure the larger viewports are doing the heavy lifting.
+ *
+*/
+
+/*
+ * We're going to swap out the gravatars.
+ * In the functions.php file, you can see we're not loading the gravatar
+ * images on mobile to save bandwidth. Once we hit an acceptable viewport
+ * then we can swap out those images since they are located in a data attribute.
+*/
+function loadGravatars() {
+  // set the viewport using the function above
+  viewport = updateViewportDimensions();
+  // if the viewport is tablet or larger, we load in the gravatars
+  if (viewport.width >= 768) {
+  jQuery('.comment img[data-gravatar]').each(function(){
+    jQuery(this).attr('src',jQuery(this).attr('data-gravatar'));
+  });
+	}
+} // end function
+
+
+/*
+ * Put all your regular jQuery in here.
+*/
+jQuery(document).ready(function($) {
+
+  /*
+   * Let's fire off the gravatar function
+   * You can remove this if you don't need it
+  */
+  loadGravatars();
+
+
+}); /* end of as page load scripts */
+
+$(function(){
+   //カーソル要素の指定
+    var cursor=$("#cursor");
+    //ちょっと遅れてついてくるストーカー要素の指定  
+    var stalker=$("#stalker");
+    
+    //mousemoveイベントでカーソル要素を移動させる
+    $(document).on("mousemove",function(e){
+      //カーソルの座標位置を取得
+      var x=e.clientX;
+      var y=e.clientY;
+
+      //カーソル要素のcssを書き換える用
+      cursor.css({
+        "opacity":"0.9",
+        "top":y+"px",
+        "left":x+"px"
+      });
+      //ストーカー要素のcssを書き換える用    
+      setTimeout(function(){
+        stalker.css({
+          "opacity":"0.4",
+          "top":y+"px",
+          "left":x+"px"
+        });
+      },140);//カーソルより遅れる時間を指定
+    });
+    //aタグホバー
+    $("a").on({
+      "mouseenter": function() {
+        //activeクラス付与
+//         cursor.addClass("active");
+        stalker.addClass("active");
+      },
+      "mouseleave": function() {
+//         cursor.removeClass("active");
+        stalker.removeClass("active");
+      }
+    });
+	
+    // header menu
+    $(".menuOpenBtn").click(function(){
+        $(".menuLists").fadeIn()
+        $("body").addClass("bodyScroll")
+        $(".menuCloseBtn").removeClass("menuHide")
+        $(".menuOpenBtn").addClass("menuHide")
+    })
+    $(".menuCloseBtn").click(function(){
+        $(".menuLists").fadeOut()
+        $("body").removeClass("bodyScroll")
+        $(".menuCloseBtn").addClass("menuHide")
+        $(".menuOpenBtn").removeClass("menuHide")
+    })
+	
+    $(window).on('load scroll resize', function(){
+        var scrollTop = $(document).scrollTop();
+        $(".scrollRaise").each(function() {
+            if (scrollTop > $(this).offset().top - $(window).height()){
+                $(this).addClass("isActive");
+            }
+        });
+		$(".homeTitle").each(function() {
+            if (scrollTop > $(this).offset().top - $(window).height()){
+                $(this).addClass("titleActive");
+            }
+        });
+    });
+    // news
+    $(".newsListsChild").each(function(){
+        $(this).mouseover(function(){
+            $(this).addClass("newActive")
+        })
+        $(this).mouseout(function(){
+            $(this).removeClass("newActive")
+        })
+    });
+
+    // tab
+    $('.tabNavs li').on('click', function () {
+        $(this).addClass('Active').siblings().removeClass('Active');
+        $(this).parent().parent().next().children().eq($(this).index()).addClass("Xactive").siblings().removeClass("Xactive");
+    })
+
+    let arr=[
+        "未経験者として入社して最初の一か月は研修を受けました。一つ案件の最初の要件定義書から最後のレビューまで全部自分で把握しなければなりませんでした。まったく経験がありませんでしたが、ご指導していただいた先輩は経験豊富で、おかげさまで無事に発表できました。ITへの扉を開けたその一か月は大変でしたが、いい勉強になり、今の仕事でも研修で習った知識を運用しています。そして、自分で仕事を成し遂げたら、物凄く達成感が得られます。<br>でも、一か月で全ての内容を勉強できるわけがありませんので、仕事中でも引き続きIT知識を身につける必要があります。せっかく技術力の高い先輩がそばにいるから、多くのことを学ぼうと思います。",
+        "8月から１か月Javaのポートフォリオ制作をしました。<br>Springフレームワークを用いての作業で、他の方から教えてもらいました。<br>複雑な画面遷移や画像のあっぷでーとをしなければならないことに苦労しました。<br>現時点ではキャリア形成、スキル形成に役立ったと思っております。<br>１か月間での研修としてはかなり厳しめの内容でした。<br>これまで勉強してきたことが役立ちましたが、実際の開発ではさらにコツがいることも分かりました。",
+        "社内研修では、要件定義、基本設計、詳細設計を決定・設計するというところから始まり、<br>誰がどの機能を担当するのか、どのようなスケジュールで進めていくのか、ソースの管理方法、それぞれが作成したソースの結合など１つのシステムを開発するまでのやるべきことを学びました。<br>特にソースの結合が難しく、結合するたびにエラーが出て修正するということがありました。<br>今までチームで１つのものを作成するという経験がなかったので、今後の業務で当たり前のことで、重要なことを経験し、学ぶことができたと思います。<br>今後、社内研修で学んだことを業務で生かしていきたいと思います。",
+        "会社の研修では、SQL文やLinuxコマンドの基礎を学んだ後、Spring BootとMySQL、MyBatisを用いた社員管理システムを制作しました。<br>研修の中でも、最も重点的に行われたのは社員管理システムの作成でした。フレームワークやO/Rマッパーは初めて使用したため、仕様に戸惑うこともありましたがネット上の完成したプログラムを読み込み、同じグループのメンバーに質問を重ねることで自分で実装できる箇所も増えました。<br>また、SQL文やLinuxのコマンドは実務でもよく使っているため基礎を学ぶことができたのは、非常に良かったと感じました。"
+    ]
+    // dialog
+    $('.voiceListsChild').each(function(index){
+        $(this).click(function(){
+            for(let item in arr){
+                if(item == index){
+                    $("#dialog").addClass("diaShow");
+                    $("body").addClass("dialogHidden")
+                    $("#dialog").find("p").html(arr[item])
+                }
+            }
+        })
+        $(".dialogClose").click(function(){
+            $("#dialog").removeClass("diaShow");
+            $("body").removeClass("dialogHidden")
+        })
+    })
+	// contact btn
+//     $(".menuContactBtn").each(function(){
+//         $(this).hover(function(){
+//             $(this).children().addClass("circleActive")
+//         })
+//     })
+	    let arr1=[
+        "SunSchoo(さんスクール)へのお問い合わせは下記フォームよりお願いいたします。<br>お問い合わせ内容確認後、追って担当者よりご連絡させていただきます。",
+        "内容を確認の上、「送信する」ボタンをクリックしてください。",
+    ]
+	var lis = $('.stepNavigation>li')
+    if($('.mw_wp_form_input').length > 0){
+        lis[0].classList.add("stepActive");
+		$(".contactFormTips>p").html(arr1[0])
+    }else if($('.mw_wp_form_confirm').length > 0){
+		lis[0].classList.add("stepActive");
+        lis[1].classList.add("stepActive");
+		$(".contactFormTips>p").html(arr1[1])
+    }else if($('.mw_wp_form_complete').length > 0){
+		lis[0].classList.add("stepActive");
+        lis[1].classList.add("stepActive");
+        lis[2].classList.add("stepActive");
+		$(".contactFormTips").css({"display":"none"})
+    }
+})
